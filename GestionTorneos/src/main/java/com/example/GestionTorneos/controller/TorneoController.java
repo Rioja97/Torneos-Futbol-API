@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/torneo")
+@RequestMapping("/torneos")
 public class TorneoController {
 
     @Autowired
@@ -45,19 +45,19 @@ public class TorneoController {
         torneoService.eliminar(id);
     }
 
-    @DeleteMapping("/{idTorneo}/equipo/{idEquipo}")
+    @DeleteMapping("/{idTorneo}/equipos/{idEquipo}")
     public ResponseEntity<Torneo> eliminarEquipo(@PathVariable Long idTorneo, @PathVariable Long idEquipo) {
         Torneo torneoActualizado = torneoService.eliminarEquipoDeTorneo(idTorneo, idEquipo);
         return ResponseEntity.ok(torneoActualizado);
     }
 
-    @PostMapping("/{idTorneo}/equipo")
+    @PostMapping("/{idTorneo}/equipos")
     public ResponseEntity<Torneo> agregarEquipos(@PathVariable Long idTorneo, @RequestBody List<Long> idsEquipos) {
         Torneo torneoActualizado = torneoService.agregarEquiposAlTorneo(idTorneo, idsEquipos);
         return ResponseEntity.ok(torneoActualizado);
     }
 
-    @PostMapping("/{idTorneo}/partido")
+    @PostMapping("/{idTorneo}/partidos")
     public ResponseEntity<List<Partido>> agregarPartidosAlTorneo(
             @PathVariable Long idTorneo,
             @RequestBody List<Long> idPartidos
@@ -67,13 +67,13 @@ public class TorneoController {
     }
 
 
-    @DeleteMapping("/{idTorneo}/partido/{idPartido}")
+    @DeleteMapping("/{idTorneo}/partidos/{idPartido}")
     public ResponseEntity<Partido> eliminarPartido(@PathVariable Long idTorneo, @PathVariable Long idPartido) {
         torneoService.eliminarPartidoDeTorneo(idTorneo, idPartido);
         return ResponseEntity.ok(new Partido());
     }
 
-    @GetMapping("/{idTorneo}/partido")
+    @GetMapping("/{idTorneo}/partidos")
     public ResponseEntity<List<Partido>> listarPartidosDeTorneo(@PathVariable Long idTorneo) {
         List<Partido> partidos = torneoService.listarPartidosDeTorneo(idTorneo);
         return ResponseEntity.ok(partidos);
