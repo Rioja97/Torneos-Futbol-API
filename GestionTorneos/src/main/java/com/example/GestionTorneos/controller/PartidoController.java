@@ -1,5 +1,5 @@
 package com.example.GestionTorneos.controller;
-import com.example.GestionTorneos.dto.ResultadoPartidoDTO;
+import com.example.GestionTorneos.DTO.estadistica.ResultadoPartidoDTO;
 import com.example.GestionTorneos.model.Partido;
 import com.example.GestionTorneos.service.PartidoService;
 import jakarta.validation.Valid;

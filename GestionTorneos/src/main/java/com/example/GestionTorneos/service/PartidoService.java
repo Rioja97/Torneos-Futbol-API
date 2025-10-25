@@ -1,8 +1,7 @@
 package com.example.GestionTorneos.service;
-import com.example.GestionTorneos.dto.EstadisticaJugadorDTO;
-import com.example.GestionTorneos.dto.ResultadoPartidoDTO;
+import com.example.GestionTorneos.DTO.estadistica.EstadisticaJugadorDTO;
+import com.example.GestionTorneos.DTO.estadistica.ResultadoPartidoDTO;
 import com.example.GestionTorneos.excepcion.EntidadNoEncontradaException;
-import com.example.GestionTorneos.excepcion.NoNuloException;
 import com.example.GestionTorneos.model.Estadistica;
 import com.example.GestionTorneos.model.Jugador;
 import com.example.GestionTorneos.model.Partido;

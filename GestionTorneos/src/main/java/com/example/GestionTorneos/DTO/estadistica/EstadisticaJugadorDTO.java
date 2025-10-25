@@ -1,4 +1,4 @@
-package com.example.GestionTorneos.dto;
+package com.example.GestionTorneos.DTO.estadistica;
 
 public class EstadisticaJugadorDTO {
 

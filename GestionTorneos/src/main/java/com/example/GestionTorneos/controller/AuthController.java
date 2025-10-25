@@ -1,7 +1,7 @@
 package com.example.GestionTorneos.controller;
 
-import com.example.GestionTorneos.dto.UserLoginDTO;
-import com.example.GestionTorneos.dto.UserResponseDTO;
+import com.example.GestionTorneos.DTO.user.UserLoginDTO;
+import com.example.GestionTorneos.DTO.user.UserResponseDTO;
 import com.example.GestionTorneos.security.JwtUtil;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

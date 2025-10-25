@@ -1,5 +1,8 @@
 package com.example.GestionTorneos.controller;
 
+import com.example.GestionTorneos.DTO.jugador.JugadorCreateDTO;
+import com.example.GestionTorneos.DTO.jugador.JugadorResponseDTO;
+import com.example.GestionTorneos.DTO.jugador.JugadorUpdateDTO;
 import com.example.GestionTorneos.model.Jugador;
 import com.example.GestionTorneos.service.JugadorService;
 import jakarta.validation.Valid;
@@ -18,29 +21,29 @@ public class JugadorController {
     private JugadorService jugadorService;
 
     @GetMapping
-    public ResponseEntity<List<Jugador>> listarTodos() {
+    public ResponseEntity<List<JugadorResponseDTO>> listarTodos() {
         return ResponseEntity.ok(jugadorService.listarTodos());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Jugador> buscarPorId(@PathVariable Long id) {
+    public ResponseEntity<JugadorResponseDTO> buscarPorId(@PathVariable Long id) {
         return ResponseEntity.ok(jugadorService.buscarPorId(id));
     }
 
     @PostMapping
-    public ResponseEntity<Jugador> crear(@RequestBody @Valid Jugador jugador) {
-        Jugador nuevoJugador = jugadorService.crear(jugador);
+    public ResponseEntity<JugadorResponseDTO> crear(@RequestBody @Valid JugadorCreateDTO jugador) {
+        JugadorResponseDTO nuevoJugador = jugadorService.crear(jugador);
         return ResponseEntity.status(HttpStatus.CREATED).body(nuevoJugador);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Jugador> actualizar(@PathVariable Long id, @RequestBody @Valid Jugador datosActualizados) {
+    public ResponseEntity<JugadorResponseDTO> actualizar(@PathVariable Long id, @RequestBody @Valid JugadorUpdateDTO datosActualizados) {
         return ResponseEntity.ok(jugadorService.actualizar(id, datosActualizados));
     }
 
     @DeleteMapping("/{id}")
     public void eliminar(@PathVariable Long id) {
-        Jugador jugador =  jugadorService.buscarPorId(id);
+        JugadorResponseDTO jugador =  jugadorService.buscarPorId(id);
         jugadorService.eliminar(id);
     }
 }

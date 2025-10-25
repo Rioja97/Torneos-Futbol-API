@@ -1,12 +1,21 @@
 package com.example.GestionTorneos.service;
 
+import com.example.GestionTorneos.DTO.entrenador.EntrenadorCreateDTO;
+import com.example.GestionTorneos.DTO.entrenador.EntrenadorMapper;
+import com.example.GestionTorneos.DTO.entrenador.EntrenadorResponseDTO;
+import com.example.GestionTorneos.DTO.entrenador.EntrenadorUpdateDTO;
+import com.example.GestionTorneos.DTO.jugador.JugadorCreateDTO;
+import com.example.GestionTorneos.DTO.jugador.JugadorResponseDTO;
+import com.example.GestionTorneos.DTO.jugador.JugadorUpdateDTO;
 import com.example.GestionTorneos.excepcion.EntidadNoEncontradaException;
 import com.example.GestionTorneos.excepcion.ValorPositivoException;
 import com.example.GestionTorneos.model.Entrenador;
 import com.example.GestionTorneos.model.Equipo;
+import com.example.GestionTorneos.model.Jugador;
 import com.example.GestionTorneos.repository.EntrenadorRepository;
 import com.example.GestionTorneos.repository.EquipoRepository;
 import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,51 +28,51 @@ public class EntrenadorService {
     private EntrenadorRepository entrenadorRepository;
     @Autowired
     private EquipoRepository equipoRepository;
+    @Autowired
+    EntrenadorMapper entrenadorMapper;
 
-    public List<Entrenador> listarTodos() {
-        return entrenadorRepository.findAll();
+    public List<EntrenadorResponseDTO> listarTodos() {
+        return entrenadorRepository.findAll()
+                .stream()
+                .map(entrenadorMapper::entrenadorToEntrenadorResponseDTO)
+                .toList();
     }
 
-    public Entrenador buscarPorId(Long id) {
+    public EntrenadorResponseDTO buscarPorId(Long id) {
         if (id == null || id <= 0) {
-            throw new ValorPositivoException("El ID debe ser un valor positivo.");
+            throw new IllegalArgumentException("El ID debe ser un valor positivo.");
         }
-        return entrenadorRepository.findById(id)
-                .orElseThrow(() -> new EntidadNoEncontradaException("Entrenador no encontrado con id: " + id));
+        Entrenador entrenador = entrenadorRepository.findById(id).orElseThrow(() -> new EntidadNoEncontradaException("El entrenador con ID " + id + " no existe"));
+
+        return entrenadorMapper.entrenadorToEntrenadorResponseDTO(entrenador);
     }
 
     @Transactional
-    public Entrenador crear(Entrenador entrenador) {
-        validarEntrenador(entrenador);
+    public EntrenadorResponseDTO crear(@Valid EntrenadorCreateDTO dto) {
 
-        Equipo equipo = entrenador.getEquipo();
-        if (equipo != null) {
-            Equipo equipoPersistido = equipoRepository.findById(equipo.getId())
-                    .orElseThrow(() -> new RuntimeException("Equipo no encontrado"));
-            equipoPersistido.setEntrenador(entrenador);
-            entrenador.setEquipo(equipoPersistido);
-        }
+        Equipo equipo = equipoRepository.findById(dto.equipoId())
+                .orElseThrow(() -> new EntidadNoEncontradaException("El equipo con ID " + dto.equipoId() + " no existe"));
 
-        return entrenadorRepository.save(entrenador);
+        Entrenador nuevoEntrenador = entrenadorMapper.crearDTOToEntrenador(dto);
+
+        nuevoEntrenador.setEquipo(equipo);
+        Entrenador entrenador = entrenadorRepository.save(nuevoEntrenador);
+        return  entrenadorMapper.entrenadorToEntrenadorResponseDTO(entrenador);
     }
 
-    public Entrenador actualizar(Long id, Entrenador datosActualizados) {
-        Entrenador existente = buscarPorId(id);
+    public EntrenadorResponseDTO actualizar(Long id, @Valid EntrenadorUpdateDTO dto) {
+        Entrenador existente = entrenadorRepository.findById(id)
+                .orElseThrow(() -> new EntidadNoEncontradaException("El entrenador con ID " + id + " no existe"));
+        entrenadorMapper.actualizarEntrenadorDesdeDTO(dto, existente);
 
-        existente.setNombre(datosActualizados.getNombre());
-        existente.setExperiencia(datosActualizados.getExperiencia());
-
-        Equipo equipo = datosActualizados.getEquipo();
-        existente.setEquipo(equipo);
-
-        if (equipo != null) {
-            equipo.setEntrenador(existente);
-            equipoRepository.save(equipo);  // Guardar para persistir la relación
+        if(dto.equipoId() != null){
+            Equipo equipo = equipoRepository.findById(dto.equipoId())
+                    .orElseThrow(() -> new EntidadNoEncontradaException("El equipo con ID " + dto.equipoId() + " no existe"));
+            existente.setEquipo(equipo);
         }
+        Entrenador entrenadorActualizado = entrenadorRepository.save(existente);
 
-        validarEntrenador(existente);
-
-        return entrenadorRepository.save(existente);
+        return entrenadorMapper.entrenadorToEntrenadorResponseDTO(entrenadorActualizado);
     }
 
 

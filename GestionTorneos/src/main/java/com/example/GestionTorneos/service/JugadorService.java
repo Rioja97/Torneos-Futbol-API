@@ -1,9 +1,16 @@
 package com.example.GestionTorneos.service;
 
+import com.example.GestionTorneos.DTO.jugador.JugadorCreateDTO;
+import com.example.GestionTorneos.DTO.jugador.JugadorMapper;
+import com.example.GestionTorneos.DTO.jugador.JugadorResponseDTO;
+import com.example.GestionTorneos.DTO.jugador.JugadorUpdateDTO;
 import com.example.GestionTorneos.excepcion.EntidadNoEncontradaException;
 import com.example.GestionTorneos.excepcion.EntidadRepetidaException;
+import com.example.GestionTorneos.model.Equipo;
 import com.example.GestionTorneos.model.Jugador;
+import com.example.GestionTorneos.repository.EquipoRepository;
 import com.example.GestionTorneos.repository.JugadorRepository;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,42 +21,65 @@ public class JugadorService {
 
     @Autowired
     private JugadorRepository jugadorRepository;
+    @Autowired
+    private EquipoRepository equipoRepository;
+    @Autowired
+    private JugadorMapper jugadorMapper;
 
-    public List<Jugador> listarTodos() {
-        return jugadorRepository.findAll();
+    public List<JugadorResponseDTO> listarTodos() {
+        return jugadorRepository.findAll()
+                .stream()
+                .map(jugadorMapper::jugadorToJugadorResponseDTO)
+                .toList();
     }
 
-    public Jugador buscarPorId(Long id) {
+    public JugadorResponseDTO buscarPorId(Long id) {
         if (id == null || id <= 0) {
             throw new IllegalArgumentException("El ID debe ser un valor positivo.");
         }
+        Jugador jugador = jugadorRepository.findById(id).orElseThrow(() -> new EntidadNoEncontradaException("El jugador con ID " + id + " no existe"));
 
-        return jugadorRepository.findById(id)
-                .orElseThrow(() -> new EntidadNoEncontradaException("Jugador no encontrado con id: " + id));
+        return jugadorMapper.jugadorToJugadorResponseDTO(jugador);
     }
 
-    public Jugador crear(Jugador jugador) {
-        validarLogicaNegocioCreacion(jugador);
-        jugador.setEquipo(jugador.getEquipo());
-        return jugadorRepository.save(jugador);
+    public JugadorResponseDTO crear(@Valid JugadorCreateDTO dto) {
+
+        Equipo equipo = equipoRepository.findById(dto.equipoId())
+                        .orElseThrow(() -> new EntidadNoEncontradaException("El equipo con ID " + dto.equipoId() + " no existe"));
+
+        Jugador nuevojugador = jugadorMapper.crearDTOToJugador(dto);
+
+        nuevojugador.setEquipo(equipo);
+        validarLogicaNegocioCreacion(nuevojugador);
+        Jugador jugador = jugadorRepository.save(nuevojugador);
+        return  jugadorMapper.jugadorToJugadorResponseDTO(jugador);
     }
 
-    public Jugador actualizar(Long id, Jugador datosActualizados) {
-        Jugador existente = buscarPorId(id);
-        validarLogicaNegocioActualizacion(datosActualizados, existente);
+    public JugadorResponseDTO actualizar(Long id, @Valid JugadorUpdateDTO dto) {
+        Jugador existente = jugadorRepository.findById(id)
+                        .orElseThrow(() -> new EntidadNoEncontradaException("El jugador con ID " + id + " no existe"));
+        jugadorMapper.actualizarJugadorDesdeDTO(dto, existente);
 
-        existente.setNombre(datosActualizados.getNombre());
-        existente.setEdad(datosActualizados.getEdad());
-        existente.setPosicion(datosActualizados.getPosicion());
-        existente.setDorsal(datosActualizados.getDorsal());
-        existente.setEquipo(datosActualizados.getEquipo());
+        if(dto.equipoId() != null){
+            Equipo equipo = equipoRepository.findById(dto.equipoId())
+                    .orElseThrow(() -> new EntidadNoEncontradaException("El equipo con ID " + dto.equipoId() + " no existe"));
+            existente.setEquipo(equipo);
+        }
+        validarLogicaNegocioActualizacion(existente);
+        Jugador jugadorActualizado = jugadorRepository.save(existente);
 
-        return jugadorRepository.save(existente);
+
+        return jugadorMapper.jugadorToJugadorResponseDTO(jugadorActualizado);
     }
 
     public void eliminar(Long id) {
-        Jugador existente = buscarPorId(id);
-        jugadorRepository.delete(existente);
+        if(id == null || id <= 0) {
+            throw new IllegalArgumentException("El ID debe ser un valor positivo.");
+        }
+        jugadorRepository.findById(id)
+                .orElseThrow(() -> new EntidadNoEncontradaException("El jugador con ID " + id + " no existe"));
+
+        jugadorRepository.deleteById(id);
     }
 
 
@@ -66,7 +96,7 @@ public class JugadorService {
         }
     }
 
-    private void validarLogicaNegocioActualizacion(Jugador actualizado, Jugador existente) {
+    private void validarLogicaNegocioActualizacion(Jugador actualizado) {
         if (actualizado.getEdad() < 15) {
             throw new IllegalArgumentException("El jugador debe tener al menos 15 años.");
         }
@@ -74,12 +104,11 @@ public class JugadorService {
         boolean dorsalOcupado = jugadorRepository.existsByEquipoIdAndDorsalAndIdNot(
                 actualizado.getEquipo().getId(),
                 actualizado.getDorsal(),
-                existente.getId()
+                actualizado.getId()
         );
 
         if (dorsalOcupado) {
             throw new EntidadRepetidaException("Ya existe otro jugador con ese dorsal en el equipo.");
         }
     }
-
 }
