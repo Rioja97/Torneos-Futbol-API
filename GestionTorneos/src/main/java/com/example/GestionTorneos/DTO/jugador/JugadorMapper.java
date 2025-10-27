@@ -17,7 +17,7 @@ public interface JugadorMapper {
 
     //Mapeo de actualizacion de jugador
     @Mapping(target = "id", ignore = true)
-
+    @Mapping(target = "equipo", ignore = true)
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void actualizarJugadorDesdeDTO(JugadorUpdateDTO dto, @MappingTarget Jugador jugador);
 }

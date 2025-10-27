@@ -17,6 +17,7 @@ public interface EntrenadorMapper {
 
     //Mapeo de actualizacion de entrenador
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "equipo", ignore = true)
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void actualizarEntrenadorDesdeDTO(EntrenadorUpdateDTO dto, @MappingTarget Entrenador entrenador);
 }

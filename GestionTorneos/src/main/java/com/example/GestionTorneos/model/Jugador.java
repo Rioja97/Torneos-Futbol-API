@@ -22,7 +22,7 @@ public class Jugador {
 
     @NotNull
     @Column(nullable = false)
-    @Size(min = 1, max = 100)
+    @Size(min = 2, max = 100)
     private String posicion;
 
     @NotNull

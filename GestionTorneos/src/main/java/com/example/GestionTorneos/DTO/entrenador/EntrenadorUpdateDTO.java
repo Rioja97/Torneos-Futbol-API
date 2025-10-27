@@ -5,7 +5,7 @@ import jakarta.validation.constraints.Size;
 
 public record EntrenadorUpdateDTO(
         @Size(min = 2) String nombre,
-        @Min(0) int experiencia,
+        @Min(0) Integer experiencia,
         Long equipoId
 ) {
 }

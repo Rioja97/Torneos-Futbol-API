@@ -70,6 +70,7 @@ public class EntrenadorService {
                     .orElseThrow(() -> new EntidadNoEncontradaException("El equipo con ID " + dto.equipoId() + " no existe"));
             existente.setEquipo(equipo);
         }
+        validarEntrenador(existente);
         Entrenador entrenadorActualizado = entrenadorRepository.save(existente);
 
         return entrenadorMapper.entrenadorToEntrenadorResponseDTO(entrenadorActualizado);
@@ -77,8 +78,13 @@ public class EntrenadorService {
 
 
     public void eliminar(Long id) {
-        Entrenador existente = buscarPorId(id);
-        entrenadorRepository.delete(existente);
+        if(id == null || id <= 0) {
+            throw new IllegalArgumentException("El ID debe ser un valor positivo.");
+        }
+        entrenadorRepository.findById(id)
+                .orElseThrow(() -> new EntidadNoEncontradaException("El jugador con ID " + id + " no existe"));
+
+        entrenadorRepository.deleteById(id);
     }
 
     private void validarEntrenador(Entrenador entrenador) {

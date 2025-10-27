@@ -1,5 +1,8 @@
 package com.example.GestionTorneos.controller;
 
+import com.example.GestionTorneos.DTO.entrenador.EntrenadorCreateDTO;
+import com.example.GestionTorneos.DTO.entrenador.EntrenadorResponseDTO;
+import com.example.GestionTorneos.DTO.entrenador.EntrenadorUpdateDTO;
 import com.example.GestionTorneos.model.Entrenador;
 import com.example.GestionTorneos.service.EntrenadorService;
 import jakarta.validation.Valid;
@@ -18,29 +21,29 @@ public class EntrenadorController {
     private EntrenadorService entrenadorService;
 
     @GetMapping
-    public ResponseEntity<List<Entrenador>> listarTodos() {
+    public ResponseEntity<List<EntrenadorResponseDTO>> listarTodos() {
         return ResponseEntity.ok(entrenadorService.listarTodos());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Entrenador> buscarPorId(@PathVariable Long id) {
+    public ResponseEntity<EntrenadorResponseDTO> buscarPorId(@PathVariable Long id) {
         return ResponseEntity.ok().body(entrenadorService.buscarPorId(id));
     }
 
     @PostMapping
-    public ResponseEntity<Entrenador> crear(@RequestBody @Valid Entrenador entrenador) {
-        Entrenador nuevoEntrenador = entrenadorService.crear(entrenador);
+    public ResponseEntity<EntrenadorResponseDTO> crear(@RequestBody @Valid EntrenadorCreateDTO entrenador) {
+        EntrenadorResponseDTO nuevoEntrenador = entrenadorService.crear(entrenador);
         return ResponseEntity.status(HttpStatus.CREATED).body(nuevoEntrenador);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Entrenador> actualizar(@PathVariable Long id, @RequestBody @Valid Entrenador datosActualizados) {
+    public ResponseEntity<EntrenadorResponseDTO> actualizar(@PathVariable Long id, @RequestBody @Valid EntrenadorUpdateDTO datosActualizados) {
         return ResponseEntity.ok().body(entrenadorService.actualizar(id, datosActualizados));
     }
 
     @DeleteMapping("/{id}")
     public void eliminar(@PathVariable Long id) {
-        Entrenador entrenador = entrenadorService.buscarPorId(id);
+        EntrenadorResponseDTO entrenador = entrenadorService.buscarPorId(id);
         entrenadorService.eliminar(id);
     }
 }

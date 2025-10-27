@@ -1,9 +1,20 @@
 package com.example.GestionTorneos.service;
 
+import com.example.GestionTorneos.DTO.entrenador.EntrenadorCreateDTO;
+import com.example.GestionTorneos.DTO.entrenador.EntrenadorResponseDTO;
+import com.example.GestionTorneos.DTO.entrenador.EntrenadorUpdateDTO;
+import com.example.GestionTorneos.DTO.equipo.EquipoCreateDTO;
+import com.example.GestionTorneos.DTO.equipo.EquipoMapper;
+import com.example.GestionTorneos.DTO.equipo.EquipoResponseDTO;
+import com.example.GestionTorneos.DTO.equipo.EquipoUpdateDTO;
+import com.example.GestionTorneos.DTO.estadio.EstadioMapper;
+import com.example.GestionTorneos.excepcion.EntidadNoEncontradaException;
+import com.example.GestionTorneos.model.Entrenador;
 import com.example.GestionTorneos.model.Equipo;
-import com.example.GestionTorneos.model.Jugador;
+import com.example.GestionTorneos.model.Estadio;
 import com.example.GestionTorneos.repository.EquipoRepository;
 import com.example.GestionTorneos.repository.JugadorRepository;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,41 +25,69 @@ public class EquipoService {
 
     @Autowired
     private EquipoRepository equipoRepository;
-
     @Autowired
     private JugadorRepository jugadorRepository;
+    @Autowired
+    private EquipoMapper equipoMapper;
+    @Autowired
+    EstadioMapper estadioMapper;
 
-    public List<Equipo> listarTodos() {
-        return equipoRepository.findAll();
+    public List<EquipoResponseDTO> listarTodos() {
+        return equipoRepository.findAll()
+                .stream()
+                .map(equipoMapper::responseDTOToEquipo)
+                .toList();
     }
 
-    public Equipo buscarPorId(Long id) {
+    public EquipoResponseDTO buscarPorId(Long id) {
         if (id == null || id <= 0) {
             throw new IllegalArgumentException("El ID debe ser un valor positivo.");
         }
+        Equipo equipo = equipoRepository.findById(id).orElseThrow(() -> new EntidadNoEncontradaException("El equipo con ID " + id + " no existe"));
 
-        return equipoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Equipo no encontrado con id: " + id));
+        return equipoMapper.responseDTOToEquipo(equipo);
     }
 
-    public Equipo crear(Equipo equipo) {
+    public EquipoResponseDTO crear(@Valid EquipoCreateDTO dto) {
+
+        Equipo equipo = equipoMapper.createDTOToEquipo(dto);
+
         validarEquipo(equipo);
-        return equipoRepository.save(equipo);
+
+        equipoRepository.save(equipo);
+        return  equipoMapper.responseDTOToEquipo(equipo);
     }
 
-    public Equipo actualizar(Long id, Equipo datosActualizados) {
-        Equipo equipoExistente = equipoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Equipo no encontrado"));
-        validarEquipo(datosActualizados);
+    public EquipoResponseDTO actualizar(Long id, @Valid EquipoUpdateDTO dto) {
 
-        equipoExistente.setNombre(datosActualizados.getNombre());
-        equipoExistente.setCiudad(datosActualizados.getCiudad());
-        return equipoRepository.save(equipoExistente);
+        Equipo equipo = null;
+
+        if(id != null){
+            equipo = equipoRepository.findById(id)
+                    .orElseThrow(() -> new EntidadNoEncontradaException("El equipo con ID " + id + " no existe"));
+        }
+
+        if(dto.estadio() != null){
+            Estadio estadioExistente = equipo.getEstadio();
+            if(estadioExistente != null){
+                estadioMapper.actualizarEstadioDesdeDTO(dto.estadio(), estadioExistente);
+            }
+        }
+
+        validarEquipo(equipo);
+        equipoRepository.save(equipo);
+
+        return equipoMapper.responseDTOToEquipo(equipo);
     }
 
     public void eliminar(Long id) {
-        Equipo existente = buscarPorId(id);
-        equipoRepository.delete(existente);
+        if(id == null || id <= 0) {
+            throw new IllegalArgumentException("El ID debe ser un valor positivo.");
+        }
+        equipoRepository.findById(id)
+                .orElseThrow(() -> new EntidadNoEncontradaException("El jugador con ID " + id + " no existe"));
+
+        equipoRepository.deleteById(id);
     }
 
     private void validarEquipo(Equipo equipo) {
