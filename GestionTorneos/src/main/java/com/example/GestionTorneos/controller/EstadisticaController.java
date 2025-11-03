@@ -1,6 +1,6 @@
 package com.example.GestionTorneos.controller;
 
-import com.example.GestionTorneos.model.Estadistica;
+import com.example.GestionTorneos.DTO.estadistica.EstadisticaDetailDTO;
 import com.example.GestionTorneos.service.EstadisticaService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,15 +17,13 @@ public class EstadisticaController {
         this.estadisticaService = estadisticaService;
     }
 
-    // Obtener TODAS las estadísticas de un jugador
     @GetMapping("/jugador/{jugadorId}")
-    public ResponseEntity<List<Estadistica>> obtenerPorJugador(@PathVariable Long jugadorId) {
+    public ResponseEntity<List<EstadisticaDetailDTO>> obtenerPorJugador(@PathVariable Long jugadorId) {
         return ResponseEntity.ok(estadisticaService.obtenerPorJugador(jugadorId));
     }
 
-    // Obtener estadísticas de un jugador en un torneo específico
     @GetMapping("/jugador/{jugadorId}/torneo/{torneoId}")
-    public ResponseEntity<List<Estadistica>> obtenerPorJugadorYTorneo(
+    public ResponseEntity<List<EstadisticaDetailDTO>> obtenerPorJugadorYTorneo(
             @PathVariable Long jugadorId,
             @PathVariable Long torneoId) {
         return ResponseEntity.ok(estadisticaService.obtenerPorJugadorYTorneo(jugadorId, torneoId));

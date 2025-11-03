@@ -31,7 +31,9 @@ public class Torneo {
     )
     private List<Equipo> equiposParticipantes = new ArrayList<>();
 
-    @OneToMany(mappedBy = "torneo", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "torneo",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true)
     @JsonIgnore
     private List<Partido> partidos = new ArrayList<>();
 

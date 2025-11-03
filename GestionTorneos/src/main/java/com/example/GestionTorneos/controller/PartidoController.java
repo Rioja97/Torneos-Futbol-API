@@ -22,33 +22,20 @@ public class PartidoController {
         this.partidoService = partidoService;
     }
 
-    @GetMapping
-    public ResponseEntity<List<PartidoResponseDTO>> listarTodos() {
-        return ResponseEntity.ok(partidoService.listarTodos());
-    }
 
     @GetMapping("/{id}")
     public ResponseEntity<PartidoDetailDTO> buscarPorId(@PathVariable Long id) {
         return ResponseEntity.ok().body(partidoService.buscarPorId(id));
     }
 
-    @PostMapping
-    public ResponseEntity<PartidoDetailDTO> crear(@RequestBody @Valid PartidoCreateDTO dto) {
-        PartidoDetailDTO nuevoPartido = partidoService.crear(dto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(nuevoPartido);
-    }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<PartidoDetailDTO> actualizar(
+    public ResponseEntity<PartidoDetailDTO> actualizarPartido(
             @PathVariable Long id,
-            @RequestBody @Valid PartidoUpdateDTO dto) { // <-- Usamos el nuevo DTO
-        return ResponseEntity.ok().body(partidoService.actualizar(id, dto));
-    }
+            @RequestBody @Valid PartidoUpdateDTO dto) {
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminar(@PathVariable Long id) {
-        partidoService.eliminar(id);
-        return ResponseEntity.noContent().build(); // .ok() también es válido
+        PartidoDetailDTO partidoActualizado = partidoService.actualizar(id, dto);
+        return ResponseEntity.ok(partidoActualizado);
     }
 
     @PutMapping("/{id}/resultado")

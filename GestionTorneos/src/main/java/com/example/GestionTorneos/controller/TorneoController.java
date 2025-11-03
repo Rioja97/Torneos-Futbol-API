@@ -1,10 +1,13 @@
 package com.example.GestionTorneos.controller;
 
+import com.example.GestionTorneos.DTO.partido.PartidoCreateDTO;
+import com.example.GestionTorneos.DTO.partido.PartidoDetailDTO;
 import com.example.GestionTorneos.DTO.partido.PartidoResponseDTO;
 import com.example.GestionTorneos.DTO.torneo.TorneoCreateDTO;
 import com.example.GestionTorneos.DTO.torneo.TorneoResponseDTO;
 import com.example.GestionTorneos.model.Partido;
 import com.example.GestionTorneos.model.Torneo;
+import com.example.GestionTorneos.service.PartidoService;
 import com.example.GestionTorneos.service.TorneoService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +23,8 @@ public class TorneoController {
 
     @Autowired
     private TorneoService torneoService;
+    @Autowired
+    private PartidoService partidoService;
 
     @GetMapping
     public ResponseEntity<List<TorneoResponseDTO>> listar() {
@@ -48,25 +53,25 @@ public class TorneoController {
         torneoService.eliminar(id);
     }
 
-    @PostMapping("/{idTorneo}/partidos")
-    public ResponseEntity<List<Partido>> agregarPartidosAlTorneo(
-            @PathVariable Long idTorneo,
-            @RequestBody List<Long> idPartidos
-    ) {
-        List<Partido> partidosAgregados = torneoService.agregarPartidos(idTorneo, idPartidos);
-        return ResponseEntity.ok(partidosAgregados);
-    }
-
-
-    @DeleteMapping("/{idTorneo}/partidos/{idPartido}")
-    public ResponseEntity<Partido> eliminarPartido(@PathVariable Long idTorneo, @PathVariable Long idPartido) {
-        torneoService.eliminarPartidoDeTorneo(idTorneo, idPartido);
-        return ResponseEntity.ok(new Partido());
-    }
-
     @GetMapping("/{idTorneo}/partidos")
     public ResponseEntity<List<PartidoResponseDTO>> listarPartidosDeTorneo(@PathVariable Long idTorneo) {
         List<PartidoResponseDTO> partidos = torneoService.listarPartidosDeTorneo(idTorneo);
         return ResponseEntity.ok(partidos);
     }
+
+    @PostMapping("/{idTorneo}/partidos")
+    public ResponseEntity<PartidoDetailDTO> crearPartidoEnTorneo(
+            @PathVariable Long idTorneo,
+            @RequestBody @Valid PartidoCreateDTO dto) {
+
+        PartidoDetailDTO nuevoPartido = partidoService.crearPartidoEnTorneo(idTorneo, dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(nuevoPartido);
+    }
+
+    @DeleteMapping("/{idTorneo}/partidos/{idPartido}")
+    public void eliminarPartidoDelTorneo(@PathVariable Long idTorneo, @PathVariable Long idPartido) {
+        partidoService.eliminarPartidoDeTorneo(idTorneo, idPartido);
+    }
+
+
 }

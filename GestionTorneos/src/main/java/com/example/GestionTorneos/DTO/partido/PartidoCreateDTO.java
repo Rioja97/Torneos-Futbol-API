@@ -12,9 +12,6 @@ public record PartidoCreateDTO(
         @NotNull(message = "El ID del equipo visitante es obligatorio")
         Long equipoVisitanteId,
 
-        @NotNull(message = "El ID del torneo es obligatorio")
-        Long torneoId,
-
         @NotNull(message = "La fecha es obligatoria")
         @FutureOrPresent(message = "La fecha del partido no puede ser en el pasado")
         LocalDate fecha

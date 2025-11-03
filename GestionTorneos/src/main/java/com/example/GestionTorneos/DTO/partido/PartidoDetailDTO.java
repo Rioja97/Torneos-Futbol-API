@@ -6,7 +6,6 @@ import com.example.GestionTorneos.model.Torneo;
 import java.time.LocalDate;
 import java.util.List;
 
-// DTO completo para la vista de detalle
 public record PartidoDetailDTO(
         Long id,
         String nombreEquipoLocal,
@@ -15,6 +14,6 @@ public record PartidoDetailDTO(
         LocalDate fecha,
         String resultado,
         boolean jugado,
-        List<EstadisticaDetailDTO> estadisticas // <-- La lista de estadísticas
+        List<EstadisticaDetailDTO> estadisticas //
 ) {
 }
