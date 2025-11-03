@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -20,7 +21,7 @@ public class Torneo {
     @NotNull
     @Column(nullable = false)
     @Size(min = 2, max = 100)
-    private String categoria;
+    private String division;
 
     @ManyToMany
     @JoinTable(
@@ -28,11 +29,11 @@ public class Torneo {
             joinColumns = @JoinColumn(name = "torneo_id"),
             inverseJoinColumns = @JoinColumn(name = "equipo_id")
     )
-    private List<Equipo> equiposParticipantes;
+    private List<Equipo> equiposParticipantes = new ArrayList<>();
 
     @OneToMany(mappedBy = "torneo", cascade = CascadeType.ALL)
     @JsonIgnore
-    private List<Partido> partidos;
+    private List<Partido> partidos = new ArrayList<>();
 
     @NotNull
     @Min(4)
@@ -54,11 +55,11 @@ public class Torneo {
     public void setNombre(String nombre) {
         this.nombre = nombre;
     }
-    public String getCategoria() {
-        return categoria;
+    public String getDivision() {
+        return division;
     }
-    public void setCategoria(String categoria) {
-        this.categoria = categoria;
+    public void setDivision(String division) {
+        this.division = division;
     }
     public List<Equipo> getEquiposParticipantes() {
         return equiposParticipantes;

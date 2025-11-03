@@ -1,24 +1,17 @@
 package com.example.GestionTorneos.DTO.estadistica;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import java.util.List;
 
-public class ResultadoPartidoDTO {
+public record ResultadoPartidoDTO(
 
-    private String resultado;
-    private List<EstadisticaJugadorDTO> estadisticasJugadores;
+        @NotBlank(message = "El resultado no puede estar vacío")
+        String resultado, // Ej: "2-1"
 
-    public ResultadoPartidoDTO() {}
-
-    public String getResultado() {
-        return resultado;
-    }
-    public void setResultado(String resultado) {
-        this.resultado = resultado;
-    }
-    public List<EstadisticaJugadorDTO> getEstadisticasJugadores() {
-        return estadisticasJugadores;
-    }
-    public void setEstadisticasJugadores(List<EstadisticaJugadorDTO> estadisticasJugadores) {
-        this.estadisticasJugadores = estadisticasJugadores;
-    }
+        @NotNull(message = "La lista de estadísticas no puede ser nula")
+        @Valid // <-- Importante: le dice a Spring que valide los DTOs dentro de esta lista
+        List<EstadisticaJugadorDTO> estadisticasJugadores
+) {
 }

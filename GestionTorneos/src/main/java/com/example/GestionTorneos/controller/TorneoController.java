@@ -1,5 +1,8 @@
 package com.example.GestionTorneos.controller;
 
+import com.example.GestionTorneos.DTO.partido.PartidoResponseDTO;
+import com.example.GestionTorneos.DTO.torneo.TorneoCreateDTO;
+import com.example.GestionTorneos.DTO.torneo.TorneoResponseDTO;
 import com.example.GestionTorneos.model.Partido;
 import com.example.GestionTorneos.model.Torneo;
 import com.example.GestionTorneos.service.TorneoService;
@@ -19,42 +22,30 @@ public class TorneoController {
     private TorneoService torneoService;
 
     @GetMapping
-    public ResponseEntity<List<Torneo>> listar() {
+    public ResponseEntity<List<TorneoResponseDTO>> listar() {
         return ResponseEntity.ok(torneoService.listarTodos());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Torneo> buscarPorId(@PathVariable Long id) {
+    public ResponseEntity<TorneoResponseDTO> buscarPorId(@PathVariable Long id) {
         return ResponseEntity.ok(torneoService.buscarPorId(id));
     }
 
     @PostMapping
-    public ResponseEntity<Torneo> crear(@RequestBody @Valid Torneo torneo) {
-        Torneo nuevoTorneo = torneoService.crear(torneo);
+    public ResponseEntity<TorneoResponseDTO> crear(@RequestBody @Valid TorneoCreateDTO torneo) {
+        TorneoResponseDTO nuevoTorneo = torneoService.crear(torneo);
         return ResponseEntity.status(HttpStatus.CREATED).body(nuevoTorneo);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Torneo> actualizar(@PathVariable Long id, @RequestBody @Valid Torneo datosActualizados) {
+    public ResponseEntity<TorneoResponseDTO> actualizar(@PathVariable Long id, @RequestBody @Valid TorneoResponseDTO datosActualizados) {
         return ResponseEntity.ok(torneoService.actualizar(id, datosActualizados));
     }
 
     @DeleteMapping("/{id}")
     public void eliminar(@PathVariable Long id) {
-        Torneo torneo = torneoService.buscarPorId(id);
+        TorneoResponseDTO torneo = torneoService.buscarPorId(id);
         torneoService.eliminar(id);
-    }
-
-    @DeleteMapping("/{idTorneo}/equipos/{idEquipo}")
-    public ResponseEntity<Torneo> eliminarEquipo(@PathVariable Long idTorneo, @PathVariable Long idEquipo) {
-        Torneo torneoActualizado = torneoService.eliminarEquipoDeTorneo(idTorneo, idEquipo);
-        return ResponseEntity.ok(torneoActualizado);
-    }
-
-    @PostMapping("/{idTorneo}/equipos")
-    public ResponseEntity<Torneo> agregarEquipos(@PathVariable Long idTorneo, @RequestBody List<Long> idsEquipos) {
-        Torneo torneoActualizado = torneoService.agregarEquiposAlTorneo(idTorneo, idsEquipos);
-        return ResponseEntity.ok(torneoActualizado);
     }
 
     @PostMapping("/{idTorneo}/partidos")
@@ -74,9 +65,8 @@ public class TorneoController {
     }
 
     @GetMapping("/{idTorneo}/partidos")
-    public ResponseEntity<List<Partido>> listarPartidosDeTorneo(@PathVariable Long idTorneo) {
-        List<Partido> partidos = torneoService.listarPartidosDeTorneo(idTorneo);
+    public ResponseEntity<List<PartidoResponseDTO>> listarPartidosDeTorneo(@PathVariable Long idTorneo) {
+        List<PartidoResponseDTO> partidos = torneoService.listarPartidosDeTorneo(idTorneo);
         return ResponseEntity.ok(partidos);
     }
-
 }

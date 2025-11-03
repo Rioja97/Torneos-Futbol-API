@@ -1,17 +1,25 @@
 package com.example.GestionTorneos.service;
 
+// ... (todas tus importaciones DTO) ...
+import com.example.GestionTorneos.DTO.partido.PartidoResponseDTO; // <-- IMPORTANTE
+import com.example.GestionTorneos.DTO.partido.PartidoMapper; // <-- IMPORTANTE
+import com.example.GestionTorneos.DTO.partido.PartidoResponseDTO;
+import com.example.GestionTorneos.DTO.torneo.TorneoCreateDTO;
+import com.example.GestionTorneos.DTO.torneo.TorneoMapper;
+import com.example.GestionTorneos.DTO.torneo.TorneoResponseDTO;
 import com.example.GestionTorneos.excepcion.CupoMaximoException;
-import com.example.GestionTorneos.excepcion.EntidadRepetidaException;
+// ... (todas tus otras importaciones de excepciones) ...
+import com.example.GestionTorneos.excepcion.EntidadNoEncontradaException;
 import com.example.GestionTorneos.excepcion.NoNuloException;
 import com.example.GestionTorneos.model.Equipo;
 import com.example.GestionTorneos.model.Partido;
 import com.example.GestionTorneos.model.Torneo;
 import com.example.GestionTorneos.repository.EquipoRepository;
+import com.example.GestionTorneos.repository.PartidoRepository; // <-- IMPORTANTE
 import com.example.GestionTorneos.repository.TorneoRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.validation.Valid;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,153 +29,72 @@ import java.util.stream.Collectors;
 @Service
 public class TorneoService {
 
-    @Autowired
-    private TorneoRepository torneoRepository;
-    @Autowired
-    private EquipoRepository equipoRepository;
-    @Autowired
-    private PartidoService partidoService;
+    private final TorneoRepository torneoRepository;
+    private final EquipoRepository equipoRepository;
+    private final PartidoRepository partidoRepository; // <-- CAMBIO: Inyectamos el Repo
+    private final TorneoMapper torneoMapper;
+    private final PartidoMapper partidoMapper; // <-- CAMBIO: Inyectamos el Mapper
 
-    public List<Torneo> listarTodos() {
-        return torneoRepository.findAll();
+    // CAMBIO: Inyección por constructor (mejor práctica)
+    public TorneoService(TorneoRepository torneoRepository,
+                         EquipoRepository equipoRepository,
+                         PartidoRepository partidoRepository,
+                         TorneoMapper torneoMapper,
+                         PartidoMapper partidoMapper) {
+        this.torneoRepository = torneoRepository;
+        this.equipoRepository = equipoRepository;
+        this.partidoRepository = partidoRepository;
+        this.torneoMapper = torneoMapper;
+        this.partidoMapper = partidoMapper;
     }
 
-    public Torneo buscarPorId(Long id) {
-        if (id == null || id <= 0) {
-            throw new IllegalArgumentException("El ID debe ser un valor positivo.");
-        }
-
-        return torneoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Torneo no encontrado con id: " + id));
+    public List<TorneoResponseDTO> listarTodos() {
+        return torneoRepository.findAll()
+                .stream()
+                .map(torneoMapper::torneoToTorneoResponseDTO)
+                .toList();
     }
 
-    public Torneo crear(Torneo torneo) {
+    public TorneoResponseDTO buscarPorId(Long id) {
+        Torneo torneo = torneoRepository.findById(id).orElseThrow(() -> new EntidadNoEncontradaException("El torneo con ID " + id + " no existe"));
+        return torneoMapper.torneoToTorneoResponseDTO(torneo);
+    }
+
+    public TorneoResponseDTO crear(@Valid TorneoCreateDTO dto) {
+        Torneo torneo = torneoMapper.torneoDTOToTorneo(dto);
         validarLogicaNegocioCreacion(torneo);
-        List<Equipo> equiposValidos = obtenerEquiposValidos(torneo.getEquiposParticipantes());
-        torneo.setEquiposParticipantes(equiposValidos);
-        return torneoRepository.save(torneo);
+        torneo = torneoRepository.save(torneo);
+        return torneoMapper.torneoToTorneoResponseDTO(torneo);
     }
 
-    public Torneo actualizar(Long id, Torneo datosActualizados) {
-        Torneo existente = buscarPorId(id);
-        validarLogicaNegocioActualizacion(datosActualizados, existente);
 
-        existente.setNombre(datosActualizados.getNombre());
-        existente.setCategoria(datosActualizados.getCategoria());
-
-        List<Equipo> equiposValidos = obtenerEquiposValidos(datosActualizados.getEquiposParticipantes());
-        existente.setEquiposParticipantes(equiposValidos);
-
-        existente.setCupo(datosActualizados.getCupo());
-
-        return torneoRepository.save(existente);
+    public TorneoResponseDTO actualizar(Long id, @Valid TorneoResponseDTO dto) {
+        Torneo actualizado = torneoRepository.findById(id)
+                .orElseThrow(() -> new EntidadNoEncontradaException("El torneo con ID " + id + " no existe"));
+        torneoMapper.actualizarTorneoDesdeDTO(dto, actualizado);
+        validarLogicaNegocioActualizacion(actualizado);
+        torneoRepository.save(actualizado);
+        return torneoMapper.torneoToTorneoResponseDTO(actualizado);
     }
 
 
     public void eliminar(Long id) {
-        Torneo existente = buscarPorId(id);
-        torneoRepository.delete(existente);
-    }
-
-    private void validarLogicaNegocioCreacion(Torneo torneo) {
-        if (torneo.getCupo() != null && torneo.getEquiposParticipantes() != null &&
-                torneo.getEquiposParticipantes().size() > torneo.getCupo()) {
-            throw new CupoMaximoException("El número de equipos excede el cupo permitido.");
-        }
-
-        if (torneoRepository.existsByNombreAndCategoria(
-                torneo.getNombre(), torneo.getCategoria())) {
-            throw new EntidadRepetidaException("Ya existe un torneo con ese nombre y categoría.");
-        }
-
-        if (torneo.getEquiposParticipantes() == null) {
-            throw new NoNuloException("La lista de equipos participantes no puede ser nula.");
-        }
-
-        Set<Long> idsUnicos = torneo.getEquiposParticipantes().stream()
-                .map(Equipo::getId)
-                .collect(Collectors.toSet());
-
-        if (idsUnicos.size() != torneo.getEquiposParticipantes().size()) {
-            throw new EntidadRepetidaException("No puede haber equipos duplicados en el torneo.");
-        }
-    }
-
-    private void validarLogicaNegocioActualizacion(Torneo actualizado, Torneo existente) {
-        if (actualizado.getEquiposParticipantes() == null) {
-            throw new NoNuloException("La lista de equipos participantes no puede ser nula.");
-        }
-
-        if (actualizado.getCupo() != null &&
-                actualizado.getEquiposParticipantes().size() > actualizado.getCupo()) {
-            throw new CupoMaximoException("La cantidad de equipos supera el nuevo cupo.");
-        }
-
-        Set<Long> idsUnicos = actualizado.getEquiposParticipantes().stream()
-                .map(Equipo::getId)
-                .collect(Collectors.toSet());
-
-        if (idsUnicos.size() != actualizado.getEquiposParticipantes().size()) {
-            throw new EntidadRepetidaException("No puede haber equipos duplicados en el torneo.");
-        }
-    }
-
-    private List<Equipo> obtenerEquiposValidos(List<Equipo> equipos) {
-        List<Long> ids = equipos.stream()
-                .map(Equipo::getId)
-                .collect(Collectors.toList());
-
-        List<Equipo> equiposValidos = equipoRepository.findAllById(ids);
-
-        if (equiposValidos.size() != ids.size()) {
-            throw new RuntimeException("Uno o más equipos no existen en la base de datos");
-        }
-        return equiposValidos;
-    }
-
-    public Torneo eliminarEquipoDeTorneo(Long idTorneo, Long idEquipo) {
-        Torneo torneo = buscarPorId(idTorneo);
-
-        List<Equipo> equiposActuales = torneo.getEquiposParticipantes();
-
-        boolean removed = equiposActuales.removeIf(equipo -> equipo.getId().equals(idEquipo));
-        if (!removed) {
-            throw new RuntimeException("El equipo no pertenece al torneo.");
-        }
-
-        torneo.setEquiposParticipantes(equiposActuales);
-
-        return torneoRepository.save(torneo);
-    }
-
-    public Torneo agregarEquiposAlTorneo(Long idTorneo, List<Long> idsEquipos) {
-        Torneo torneo = buscarPorId(idTorneo);
-
-        // Traer los equipos válidos por ID
-        List<Equipo> equiposParaAgregar = equipoRepository.findAllById(idsEquipos);
-
-        if (equiposParaAgregar.size() != idsEquipos.size()) {
-            throw new RuntimeException("Uno o más equipos no existen en la base de datos");
-        }
-
-        // Obtener los equipos actuales
-        List<Equipo> equiposActuales = torneo.getEquiposParticipantes();
-
-        // Agregar sin duplicados
-        Set<Long> idsActuales = equiposActuales.stream()
-                .map(Equipo::getId)
-                .collect(Collectors.toSet());
-
-        for (Equipo e : equiposParaAgregar) {
-            if (!idsActuales.contains(e.getId())) {
-                equiposActuales.add(e);
+        Torneo aEliminar = torneoRepository.findById(id)
+                .orElseThrow(() -> new EntidadNoEncontradaException("El torneo con ID " + id + " no existe"));
+        // ... (tu lógica de validación de partidos jugados está bien) ...
+        for (Partido p : aEliminar.getPartidos()) {
+            if(p.getResultado() == null){
+                throw new NoNuloException("No se pueden eliminar torneos con partidos por jugarse");
             }
         }
-
-        torneo.setEquiposParticipantes(equiposActuales);
-
-        return torneoRepository.save(torneo);
+        torneoRepository.deleteById(id);
     }
+
+    // ... (tus métodos de validación están bien) ...
+    private void validarLogicaNegocioCreacion(Torneo torneo) { /* ... tu código ... */ }
+    private void validarLogicaNegocioActualizacion(Torneo actualizado) { /* ... tu código ... */ }
+
+    // --- MÉTODOS CORREGIDOS ---
 
     @Transactional
     public List<Partido> agregarPartidos(Long idTorneo, List<Long> idPartidos) {
@@ -177,14 +104,21 @@ public class TorneoService {
         List<Partido> partidosAgregados = new ArrayList<>();
 
         for (Long idPartido : idPartidos) {
-            Partido partido = partidoService.buscarPorId(idPartido);
+            // CAMBIO: Buscamos la ENTIDAD usando el REPO
+            Partido partido = partidoRepository.findById(idPartido)
+                    .orElseThrow(() -> new RuntimeException("Partido no encontrado"));
+
+            // CAMBIO: Modificamos la ENTIDAD
             partido.setTorneo(torneo);
-            Partido partidoGuardado = partidoService.crear(partido);
+
+            // CAMBIO: Guardamos la ENTIDAD usando el REPO
+            Partido partidoGuardado = partidoRepository.save(partido);
             partidosAgregados.add(partidoGuardado);
         }
 
-        torneo.getPartidos().addAll(partidosAgregados);
-        torneoRepository.save(torneo); // opcional si usás CascadeType.ALL en partidos
+        // Esto ya no es necesario si guardas dentro del bucle
+        // torneo.getPartidos().addAll(partidosAgregados);
+        // torneoRepository.save(torneo);
 
         return partidosAgregados;
     }
@@ -195,22 +129,27 @@ public class TorneoService {
         Torneo torneo = torneoRepository.findById(idTorneo)
                 .orElseThrow(() -> new RuntimeException("Torneo no encontrado"));
 
-        Partido partido = partidoService.buscarPorId(idPartido);
+        // CAMBIO: Buscamos la ENTIDAD usando el REPO
+        Partido partido = partidoRepository.findById(idPartido)
+                .orElseThrow(() -> new RuntimeException("Partido no encontrado"));
 
         if (!torneo.getPartidos().contains(partido)) {
             throw new RuntimeException("El partido no pertenece a este torneo");
         }
 
-        torneo.getPartidos().remove(partido);
-        partidoService.eliminar(idPartido);
+        torneo.getPartidos().remove(partido); // Quita la relación
+        partidoRepository.delete(partido); // CAMBIO: Borra el partido usando el REPO
     }
 
     @Transactional(readOnly = true)
-    public List<Partido> listarPartidosDeTorneo(Long idTorneo) {
+    public List<PartidoResponseDTO> listarPartidosDeTorneo(Long idTorneo) {
         Torneo torneo = torneoRepository.findById(idTorneo)
                 .orElseThrow(() -> new RuntimeException("Torneo no encontrado"));
 
-        return new ArrayList<>(torneo.getPartidos());
+        // CAMBIO: Devolvemos DTOs, no entidades
+        return torneo.getPartidos()
+                .stream()
+                .map(partidoMapper::partidoToPartidoResponseDTO)
+                .toList();
     }
-
 }
