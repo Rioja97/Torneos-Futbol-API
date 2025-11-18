@@ -36,6 +36,7 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
+    @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception{
         return configuration.getAuthenticationManager();
     }
@@ -47,9 +48,10 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/auth/login", "/auth/register").permitAll()
 
-                        // GET → ESPECTADOR o ADMIN
+                        .requestMatchers("/users/**").authenticated()
+
                         .requestMatchers(HttpMethod.GET, "/equipos/**").hasAnyRole("ESPECTADOR", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/torneos/**").hasAnyRole("ESPECTADOR", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/entrenadores/**").hasAnyRole("ESPECTADOR", "ADMIN")
@@ -57,7 +59,6 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/partidos/**").hasAnyRole("ESPECTADOR", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/estadisticas/**").hasAnyRole("ESPECTADOR", "ADMIN")
 
-                        // POST, PUT, DELETE → solo ADMIN
                         .requestMatchers(HttpMethod.POST, "/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/**").hasRole("ADMIN")
@@ -65,7 +66,6 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
 
-                // === 🔥 Manejadores personalizados de error ===
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint((request, response, authException) -> {
                             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // 401

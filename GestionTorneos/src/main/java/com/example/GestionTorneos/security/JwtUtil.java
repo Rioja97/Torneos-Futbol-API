@@ -4,21 +4,28 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
-import java.util.Date;
+import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Component
 public class JwtUtil {
     private final Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
     private final long expiration = 1000 * 60 * 60 * 24; // 24 horas de validez
 
-    public String generateToken(String username, String role) {
+    public String generateToken(String username, Collection<? extends GrantedAuthority> authorities) {
+        Map<String, Object> claims = new    HashMap<>();
+        // Guarda las autoridades en el token
+        claims.put("authorities", authorities);
+
         return Jwts.builder()
+                .setClaims(claims)
                 .setSubject(username)
-                .claim("role", role) // Guarda el rol como un "claim" en el token
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(key, SignatureAlgorithm.HS256) // Especifica el algoritmo aquí también
@@ -37,6 +44,16 @@ public class JwtUtil {
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
+    }
+
+    public Collection<? extends GrantedAuthority> extractAuthorities(String token) {
+        // Extrae la lista de 'claims' de roles (asumiendo que la guardaste como "authorities")
+        List<Map<String, String>> authoritiesMaps = extractClaim(token, claims -> (List<Map<String, String>>) claims.get("authorities"));
+
+        // Convierte esos mapas de vuelta a SimpleGrantedAuthority
+        return authoritiesMaps.stream()
+                .map(authMap -> new SimpleGrantedAuthority(authMap.get("authority")))
+                .collect(Collectors.toList());
     }
 
     public String extractRole(String token) {

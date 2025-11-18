@@ -29,8 +29,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
-        String path =  request.getServletPath();
-        if(path.startsWith("/auth")) {
+        String path = request.getServletPath();
+        if (path.startsWith("/auth")) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -38,24 +38,20 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         String authHeader = request.getHeader("Authorization");
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            filterChain.doFilter(request, response); // Continúa con otros filtros si no hay token o no es Bearer
-            return; // Importante para evitar procesar la cadena sin autenticación
+            filterChain.doFilter(request, response);
+            return;
         }
 
-        String token = authHeader.substring(7); // Extrae el token
+        String token = authHeader.substring(7);
         if (jwtUtil.isTokenValid(token)) {
             String username = jwtUtil.extractUsername(token);
-            String role = jwtUtil.extractRole(token);
 
-            // Spring Security espera roles con el prefijo "ROLE_"
-            // Por ejemplo, si tu token dice "ADMIN", Spring Security espera "ROLE_ADMIN"
-            Collection<? extends GrantedAuthority> authorities = Arrays.asList(new SimpleGrantedAuthority("ROLE_" + role));
+            Collection<? extends GrantedAuthority> authorities = jwtUtil.extractAuthorities(token);
 
             UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                    username, null, authorities); // Pasa los roles aquí
-            authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    username, null, authorities);
 
-            // Establece la autenticación en el contexto de seguridad
+            authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }
         filterChain.doFilter(request, response);
