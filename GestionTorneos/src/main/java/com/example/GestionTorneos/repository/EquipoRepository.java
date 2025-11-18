@@ -7,4 +7,5 @@ import java.time.LocalDate;
 
 public interface EquipoRepository extends JpaRepository<Equipo, Long> {
     boolean existsByNombreIgnoreCaseAndCiudadIgnoreCase(String nombre, String ciudad);
+    boolean existsByNombreIgnoreCaseAndCiudadIgnoreCaseAndIdNot(String nombre, String ciudad, Long id);
 }

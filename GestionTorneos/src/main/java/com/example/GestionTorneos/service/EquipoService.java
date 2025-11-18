@@ -60,11 +60,14 @@ public class EquipoService {
 
     public EquipoResponseDTO actualizar(Long id, @Valid EquipoUpdateDTO dto) {
 
-        Equipo equipo = null;
+        Equipo equipo = equipoRepository.findById(id)
+                .orElseThrow(() -> new EntidadNoEncontradaException("El equipo con ID " + id + " no existe"));
 
-        if(id != null){
-            equipo = equipoRepository.findById(id)
-                    .orElseThrow(() -> new EntidadNoEncontradaException("El equipo con ID " + id + " no existe"));
+        if (dto.nombre() != null) {
+            equipo.setNombre(dto.nombre());
+        }
+        if (dto.ciudad() != null) {
+            equipo.setCiudad(dto.ciudad());
         }
 
         if(dto.estadio() != null){
@@ -93,23 +96,19 @@ public class EquipoService {
     private void validarEquipo(Equipo equipo) {
         if (equipo == null) throw new IllegalArgumentException("El equipo no puede ser nulo.");
 
-        if (equipo.getNombre() == null || equipo.getNombre().trim().isEmpty()) throw new IllegalArgumentException("El nombre del equipo es obligatorio.");
+        if (equipo.getNombre() == null || equipo.getNombre().trim().isEmpty()) {
+            throw new IllegalArgumentException("El nombre del equipo es obligatorio.");
+        }
 
-        if (equipo.getCiudad() == null || equipo.getCiudad().trim().isEmpty()) throw new IllegalArgumentException("La ciudad del equipo es obligatoria.");
+        if (equipo.getCiudad() == null || equipo.getCiudad().trim().isEmpty()) {
+            throw new IllegalArgumentException("La ciudad del equipo es obligatoria.");
+        }
 
-        boolean existeEquipoDuplicado = equipoRepository.existsByNombreIgnoreCaseAndCiudadIgnoreCase(
-                equipo.getNombre(), equipo.getCiudad());
+        boolean existeEquipoDuplicado = equipoRepository.existsByNombreIgnoreCaseAndCiudadIgnoreCaseAndIdNot(
+                equipo.getNombre(), equipo.getCiudad(), equipo.getId());
 
-        //if (existeEquipoDuplicado) throw new IllegalArgumentException("Ya existe un equipo con ese nombre en esa ciudad.");
-
-        if (equipo.getJugadores() != null) {
-            equipo.getJugadores().stream()
-                    .filter(jugador -> jugador.getId() != null)
-                    .filter(jugador -> jugadorRepository.existsByIdAndEquipoIsNotNull(jugador.getId()))
-                    .findFirst()
-                    .ifPresent(jugador -> {
-                        throw new IllegalArgumentException("El jugador " + jugador.getNombre() + " ya pertenece a otro equipo.");
-                    });
+        if (existeEquipoDuplicado) {
+            throw new IllegalArgumentException("Ya existe otro equipo con el mismo nombre y ciudad.");
         }
     }
 }
