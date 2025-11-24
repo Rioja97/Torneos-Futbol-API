@@ -20,7 +20,8 @@ public class Entrenador {
     @Min(value = 0, message = "La experiencia debe ser un número positivo")
     private int experiencia;
 
-    @OneToOne(mappedBy = "entrenador")
+    @OneToOne
+    @JoinColumn(name = "equipo_id") // <--- ¡ESTO ES OBLIGATORIO!
     private Equipo equipo;
 
     public Long getId() {

@@ -4,6 +4,7 @@ public record EntrenadorResponseDTO(
         Long id,
         String nombre,
         int experiencia,
+        int equipoId,
         String nombreEquipo
 ) {
 }

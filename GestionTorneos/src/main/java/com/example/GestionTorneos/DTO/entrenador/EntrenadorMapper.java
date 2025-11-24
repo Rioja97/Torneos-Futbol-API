@@ -13,6 +13,7 @@ public interface EntrenadorMapper {
 
     //Mapeo para listado de entrenador
     @Mapping(source = "equipo.nombre", target = "nombreEquipo")
+    @Mapping(source = "equipo.id", target = "equipoId") // <--- ¡AGREGÁ ESTA LÍNEA!
     EntrenadorResponseDTO entrenadorToEntrenadorResponseDTO(Entrenador entrenador);
 
     //Mapeo de actualizacion de entrenador

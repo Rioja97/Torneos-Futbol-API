@@ -64,4 +64,12 @@ public class GlobalExceptionHandler {
 
         return new ResponseEntity<>(body, status);
     }
+
+    //  Argumentos inválidos (Validaciones manuales como la del Service)
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<?> handleIllegalArgument(IllegalArgumentException ex) {
+        // Devolvemos 400 Bad Request (o 409 Conflict si preferís)
+        // Esto hará que el frontend sepa que fue un error de validación y no del servidor
+        return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
+    }
 }

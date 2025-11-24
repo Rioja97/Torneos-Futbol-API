@@ -6,5 +6,4 @@ public record EntrenadorCreateDTO(
         @NotNull String nombre,
         @NotNull int experiencia,
         @NotNull Long equipoId
-) {
-}
+) {}

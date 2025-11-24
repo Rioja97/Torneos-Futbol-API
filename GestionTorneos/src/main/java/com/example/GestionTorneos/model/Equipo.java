@@ -26,9 +26,7 @@ public class Equipo {
     @JsonIgnore
     private List<Jugador> jugadores;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "entrenador_id", referencedColumnName = "id")
-    @JsonIgnore
+    @OneToOne(mappedBy = "equipo")
     private Entrenador entrenador;
 
     @OneToOne(cascade = CascadeType.ALL)
