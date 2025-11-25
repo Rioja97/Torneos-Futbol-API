@@ -123,10 +123,7 @@ public class TorneoService {
 
     private void validarLogicaNegocioActualizacion(Torneo actualizado) {
 
-        if (actualizado.getCupo() != null &&
-                actualizado.getEquiposParticipantes().size() > actualizado.getCupo()) {
-            throw new CupoMaximoException("La cantidad de equipos supera el nuevo cupo.");
-        }
+        Integer nuevoCupo = actualizado.getCupo();
 
         Set<Long> idsUnicos = actualizado.getEquiposParticipantes().stream()
                 .map(Equipo::getId)
@@ -142,5 +139,23 @@ public class TorneoService {
         if (otroTorneo.isPresent() && !otroTorneo.get().getId().equals(actualizado.getId())) {
             throw new EntidadRepetidaException("Ya existe OTRO torneo con ese nombre y división.");
         }
+
+        if (nuevoCupo != null) {
+            Set<Long> equiposUsados = actualizado.getPartidos().stream()
+                    .flatMap(p -> List.of(
+                            p.getEquipoLocal().getId(),
+                            p.getEquipoVisitante().getId()
+                    ).stream())
+                    .collect(Collectors.toSet());
+
+            if (equiposUsados.size() > nuevoCupo) {
+                throw new CupoMaximoException(
+                        "No se puede establecer un cupo de " + nuevoCupo +
+                                " equipos. Actualmente el torneo ya tiene " + equiposUsados.size() +
+                                " equipos participando en partidos."
+                );
+            }
+        }
     }
+
 }

@@ -70,8 +70,7 @@ public class PartidoService {
         nuevoPartido.setEstadisticas(new ArrayList<>());
 
         validarLogicaNegocioCreacion(nuevoPartido);
-        validarCupoEquipos(torneo, nuevoPartido);
-
+        validarCupoEquipos(torneo, nuevoPartido, null);
 
         Partido partidoGuardado = partidoRepository.save(nuevoPartido);
 
@@ -105,9 +104,8 @@ public class PartidoService {
                     .orElseThrow(() -> new EntidadNoEncontradaException("Equipo visitante no encontrado"));
             partidoExistente.setEquipoVisitante(visitante);
         }
-        Torneo torneo = null;
         if (dto.torneoId() != null) {
-            torneo = torneoRepository.findById(dto.torneoId())
+            Torneo torneo = torneoRepository.findById(dto.torneoId())
                     .orElseThrow(() -> new EntidadNoEncontradaException("Torneo no encontrado"));
             partidoExistente.setTorneo(torneo);
         }
@@ -117,6 +115,7 @@ public class PartidoService {
         }
 
         validarLogicaNegocioActualizacion(partidoExistente);
+        validarCupoEquipos(partidoExistente.getTorneo(), partidoExistente, partidoExistente.getId());
 
         Partido partidoActualizado = partidoRepository.save(partidoExistente);
 
@@ -210,36 +209,34 @@ public class PartidoService {
         }
     }
 
-    private void validarCupoEquipos(Torneo torneo, Partido nuevoPartido) {
+    private void validarCupoEquipos(Torneo torneo, Partido nuevoPartido, Long partidoAExcluirId) {
 
         Integer cupo = torneo.getCupo();
-        if (cupo == null) return; // si no hay cupo, no validar
-
-        // 1. Equipos que ya están en partidos anteriores
+        if (cupo == null) return;
+        // 1. Equipos de los partidos del torneo EXCLUYENDO el partido que estoy actualizando
         Set<Long> equiposActuales = torneo.getPartidos().stream()
+                .filter(p -> partidoAExcluirId == null || !p.getId().equals(partidoAExcluirId))
                 .flatMap(p -> List.of(
                         p.getEquipoLocal().getId(),
                         p.getEquipoVisitante().getId()
                 ).stream())
                 .collect(Collectors.toSet());
-
-        // 2. Equipos nuevos del partido que quiero agregar
+        // 2. Equipos del partido nuevo/actualizado
         Set<Long> equiposDelNuevo = Set.of(
                 nuevoPartido.getEquipoLocal().getId(),
                 nuevoPartido.getEquipoVisitante().getId()
         );
-
-        // 3. Equipos que serían usados después de agregar este partido
+        // 3. Equipos totales después del cambio
         long totalEquiposUsados = Stream.concat(
                 equiposActuales.stream(),
                 equiposDelNuevo.stream()
         ).distinct().count();
-
-        // 4. Si se supera el cupo → no permitir
         if (totalEquiposUsados > cupo) {
-            throw new CupoMaximoException("No se pueden agregar más equipos. El cupo es "
-                    + cupo + " y ya está completo.");
+            throw new CupoMaximoException(
+                    "No se puede guardar el partido: el torneo alcanzó su cupo máximo de " + cupo + " equipos."
+            );
         }
     }
+
 
 }
