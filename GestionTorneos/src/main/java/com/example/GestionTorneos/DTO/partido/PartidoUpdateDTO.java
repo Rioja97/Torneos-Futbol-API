@@ -8,5 +8,5 @@ public record PartidoUpdateDTO(
         Long equipoLocalId,
         Long equipoVisitanteId,
         Long torneoId,
-        @FutureOrPresent LocalDate fecha
+        @FutureOrPresent(message = "La fecha del partido no puede ser en el pasado") LocalDate fecha
 ) {}

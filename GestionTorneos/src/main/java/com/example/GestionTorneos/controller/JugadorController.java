@@ -1,6 +1,7 @@
 package com.example.GestionTorneos.controller;
 
 import com.example.GestionTorneos.DTO.jugador.JugadorCreateDTO;
+import com.example.GestionTorneos.DTO.jugador.JugadorMapper;
 import com.example.GestionTorneos.DTO.jugador.JugadorResponseDTO;
 import com.example.GestionTorneos.DTO.jugador.JugadorUpdateDTO;
 import com.example.GestionTorneos.model.Jugador;
@@ -23,6 +24,8 @@ public class JugadorController {
     private JugadorService jugadorService;
     @Autowired
     private JugadorRepository jugadorRepository;
+    @Autowired
+    private JugadorMapper  jugadorMapper;
 
     @GetMapping
     public ResponseEntity<List<JugadorResponseDTO>> listarTodos() {
@@ -52,8 +55,14 @@ public class JugadorController {
     }
 
     @GetMapping("/equipo/{equipoId}")
-    @Transactional
-    public ResponseEntity<List<Jugador>> obtenerPorEquipo(@PathVariable Long equipoId) {
-        return ResponseEntity.ok(jugadorRepository.findByEquipoId(equipoId));
+    public ResponseEntity<List<JugadorResponseDTO>> obtenerPorEquipo(@PathVariable Long equipoId) {
+
+        List<Jugador> entidades = jugadorRepository.findByEquipoId(equipoId);
+
+        List<JugadorResponseDTO> dtos = entidades.stream()
+                .map(jugadorMapper::jugadorToJugadorResponseDTO)
+                .toList();
+
+        return ResponseEntity.ok(dtos);
     }
 }

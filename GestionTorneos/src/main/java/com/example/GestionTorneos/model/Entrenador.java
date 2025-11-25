@@ -12,12 +12,8 @@ public class Entrenador {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "El nombre del entrenador es obligatorio")
-    @Size(min = 2, max = 100, message = "El nombre debe tener entre 2 y 100 caracteres")
-    @Column(nullable = false)
     private String nombre;
 
-    @Min(value = 0, message = "La experiencia debe ser un número positivo")
     private int experiencia;
 
     @OneToOne

@@ -1,4 +1,5 @@
 package com.example.GestionTorneos.model;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -11,28 +12,20 @@ public class Jugador {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotNull
-    @Column(nullable = false)
-    @Size(min = 2, max = 100)
     private String nombre;
 
-    @NotNull
     @Column(nullable = false)
     private int edad;
 
-    @NotNull
     @Column(nullable = false)
-    @Size(min = 2, max = 100)
     private String posicion;
 
-    @NotNull
     @Column(nullable = false)
-    @Min(value = 1)
-    @Max(value = 99)
     private int dorsal;
 
     @ManyToOne
     @JoinColumn(name = "equipo_id", nullable = false)
+    @JsonIgnoreProperties("jugadores")
     private Equipo equipo;
 
     public Jugador() {

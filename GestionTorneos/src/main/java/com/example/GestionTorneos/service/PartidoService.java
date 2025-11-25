@@ -3,6 +3,7 @@ package com.example.GestionTorneos.service;
 import com.example.GestionTorneos.DTO.estadistica.EstadisticaJugadorDTO;
 import com.example.GestionTorneos.DTO.estadistica.ResultadoPartidoDTO;
 import com.example.GestionTorneos.DTO.partido.*;
+import com.example.GestionTorneos.excepcion.CupoMaximoException;
 import com.example.GestionTorneos.excepcion.EntidadNoEncontradaException;
 import com.example.GestionTorneos.model.*;
 import com.example.GestionTorneos.repository.EquipoRepository;
@@ -17,6 +18,8 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 @Service
@@ -67,6 +70,8 @@ public class PartidoService {
         nuevoPartido.setEstadisticas(new ArrayList<>());
 
         validarLogicaNegocioCreacion(nuevoPartido);
+        validarCupoEquipos(torneo, nuevoPartido);
+
 
         Partido partidoGuardado = partidoRepository.save(nuevoPartido);
 
@@ -100,9 +105,9 @@ public class PartidoService {
                     .orElseThrow(() -> new EntidadNoEncontradaException("Equipo visitante no encontrado"));
             partidoExistente.setEquipoVisitante(visitante);
         }
-
+        Torneo torneo = null;
         if (dto.torneoId() != null) {
-            Torneo torneo = torneoRepository.findById(dto.torneoId())
+            torneo = torneoRepository.findById(dto.torneoId())
                     .orElseThrow(() -> new EntidadNoEncontradaException("Torneo no encontrado"));
             partidoExistente.setTorneo(torneo);
         }
@@ -112,6 +117,7 @@ public class PartidoService {
         }
 
         validarLogicaNegocioActualizacion(partidoExistente);
+
         Partido partidoActualizado = partidoRepository.save(partidoExistente);
 
         return partidoMapper.partidoToPartidoDetailDTO(partidoActualizado);
@@ -203,4 +209,37 @@ public class PartidoService {
             throw new IllegalArgumentException("Uno de los equipos ya tiene un partido en esa fecha.");
         }
     }
+
+    private void validarCupoEquipos(Torneo torneo, Partido nuevoPartido) {
+
+        Integer cupo = torneo.getCupo();
+        if (cupo == null) return; // si no hay cupo, no validar
+
+        // 1. Equipos que ya están en partidos anteriores
+        Set<Long> equiposActuales = torneo.getPartidos().stream()
+                .flatMap(p -> List.of(
+                        p.getEquipoLocal().getId(),
+                        p.getEquipoVisitante().getId()
+                ).stream())
+                .collect(Collectors.toSet());
+
+        // 2. Equipos nuevos del partido que quiero agregar
+        Set<Long> equiposDelNuevo = Set.of(
+                nuevoPartido.getEquipoLocal().getId(),
+                nuevoPartido.getEquipoVisitante().getId()
+        );
+
+        // 3. Equipos que serían usados después de agregar este partido
+        long totalEquiposUsados = Stream.concat(
+                equiposActuales.stream(),
+                equiposDelNuevo.stream()
+        ).distinct().count();
+
+        // 4. Si se supera el cupo → no permitir
+        if (totalEquiposUsados > cupo) {
+            throw new CupoMaximoException("No se pueden agregar más equipos. El cupo es "
+                    + cupo + " y ya está completo.");
+        }
+    }
+
 }

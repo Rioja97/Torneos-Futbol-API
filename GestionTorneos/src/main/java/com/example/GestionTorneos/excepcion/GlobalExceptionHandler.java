@@ -3,10 +3,12 @@ package com.example.GestionTorneos.excepcion;
 import com.example.GestionTorneos.excepcion.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @ControllerAdvice
@@ -71,5 +73,22 @@ public class GlobalExceptionHandler {
         // Devolvemos 400 Bad Request (o 409 Conflict si preferís)
         // Esto hará que el frontend sepa que fue un error de validación y no del servidor
         return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<?> handleValidationErrors(MethodArgumentNotValidException ex) {
+
+        List<String> errores = ex.getBindingResult().getFieldErrors()
+                .stream()
+                .map(error -> error.getDefaultMessage()) // mensaje limpio del DTO
+                .toList();
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.BAD_REQUEST.value());
+        body.put("error", "Validación fallida");
+        body.put("errores", errores); // lista de errores legibles
+
+        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
     }
 }

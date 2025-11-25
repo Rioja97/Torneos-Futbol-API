@@ -14,13 +14,9 @@ public class Torneo {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @NotNull
-    @Column(nullable = false)
-    @Size(min = 2, max = 100)
+
     private String nombre;
-    @NotNull
-    @Column(nullable = false)
-    @Size(min = 2, max = 100)
+
     private String division;
 
     @ManyToMany
@@ -75,10 +71,10 @@ public class Torneo {
     public void setPartidos(List<Partido> partidos) {
         this.partidos = partidos;
     }
-    public @NotNull @Min(4) @Max(30) Integer getCupo() {
+    public Integer getCupo() {
         return cupo;
     }
-    public void setCupo(@NotNull @Min(4) @Max(30) Integer cupo) {
+    public void setCupo(Integer cupo) {
         this.cupo = cupo;
     }
 }

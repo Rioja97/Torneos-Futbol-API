@@ -15,16 +15,12 @@ public class Estadistica {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Min(0)
     private int goles;
 
-    @Min(0)
     private int asistencias;
 
-    @Min(0)
     private int tarjetasAmarillas;
 
-    @Min(0)
     private int tarjetasRojas;
 
     @ManyToOne

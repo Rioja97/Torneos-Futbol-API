@@ -12,14 +12,10 @@ public class Equipo {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotNull
-    @Size(min = 2, max = 100)
-    @Column(nullable = false)
+
     private String nombre;
 
-    @NotNull
-    @Size(min = 2, max = 100)
-    @Column(nullable = false)
+
     private String ciudad;
 
     @OneToMany(mappedBy = "equipo", cascade = CascadeType.ALL, orphanRemoval = true)
