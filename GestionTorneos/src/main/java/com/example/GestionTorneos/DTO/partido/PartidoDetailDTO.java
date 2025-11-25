@@ -15,5 +15,4 @@ public record PartidoDetailDTO(
         String resultado,
         boolean jugado,
         List<EstadisticaDetailDTO> estadisticas //
-) {
-}
+) {}

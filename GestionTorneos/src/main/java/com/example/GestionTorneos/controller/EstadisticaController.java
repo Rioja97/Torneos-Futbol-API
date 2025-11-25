@@ -28,4 +28,11 @@ public class EstadisticaController {
             @PathVariable Long torneoId) {
         return ResponseEntity.ok(estadisticaService.obtenerPorJugadorYTorneo(jugadorId, torneoId));
     }
+
+    @GetMapping("/torneo/{torneoId}")
+    public ResponseEntity<List<EstadisticaDetailDTO>> obtenerEstadisticasPorTorneo(
+            @PathVariable Long torneoId) {
+        List<EstadisticaDetailDTO> estadisticas = estadisticaService.obtenerPorTorneo(torneoId);
+        return ResponseEntity.ok(estadisticas);
+    }
 }

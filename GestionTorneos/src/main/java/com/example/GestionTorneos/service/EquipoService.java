@@ -88,7 +88,7 @@ public class EquipoService {
             throw new IllegalArgumentException("El ID debe ser un valor positivo.");
         }
         equipoRepository.findById(id)
-                .orElseThrow(() -> new EntidadNoEncontradaException("El jugador con ID " + id + " no existe"));
+                .orElseThrow(() -> new EntidadNoEncontradaException("El equipo con ID " + id + " no existe"));
 
         equipoRepository.deleteById(id);
     }
@@ -104,11 +104,20 @@ public class EquipoService {
             throw new IllegalArgumentException("La ciudad del equipo es obligatoria.");
         }
 
-        boolean existeEquipoDuplicado = equipoRepository.existsByNombreIgnoreCaseAndCiudadIgnoreCaseAndIdNot(
-                equipo.getNombre(), equipo.getCiudad(), equipo.getId());
-
+        boolean existeEquipoDuplicado;
+        if (equipo.getId() == null) {
+            // CREACIÓN
+            existeEquipoDuplicado = equipoRepository
+                    .existsByNombreIgnoreCaseAndCiudadIgnoreCase(equipo.getNombre(), equipo.getCiudad());
+        } else {
+            // ACTUALIZACIÓN: ignorar el propio registro
+            existeEquipoDuplicado = equipoRepository
+                    .existsByNombreIgnoreCaseAndCiudadIgnoreCaseAndIdNot(
+                            equipo.getNombre(), equipo.getCiudad(), equipo.getId());
+        }
         if (existeEquipoDuplicado) {
             throw new IllegalArgumentException("Ya existe otro equipo con el mismo nombre y ciudad.");
         }
     }
+
 }

@@ -13,6 +13,8 @@ public interface PartidoMapper {
      * Convierte una entidad Partido a un DTO ligero para listas.
      * (Este es el método que tenías, le cambié el nombre).
      */
+    @Mapping(source = "equipoLocal.id", target = "equipoLocalId")         // <--- NUEVO
+    @Mapping(source = "equipoVisitante.id", target = "equipoVisitanteId") // <--- NUEVO
     @Mapping(source = "equipoLocal.nombre", target = "nombreEquipoLocal")
     @Mapping(source = "equipoVisitante.nombre", target = "nombreEquipoVisitante")
     @Mapping(source = "torneo.nombre", target = "nombreTorneo")
@@ -20,7 +22,7 @@ public interface PartidoMapper {
 
     /**
      * Convierte una entidad Partido a un DTO con todos los detalles.
-     * (Este es el método nuevo que necesitas).
+     * (Este es el metodo nuevo que necesitas).
      */
     @Mapping(source = "equipoLocal.nombre", target = "nombreEquipoLocal")
     @Mapping(source = "equipoVisitante.nombre", target = "nombreEquipoVisitante")

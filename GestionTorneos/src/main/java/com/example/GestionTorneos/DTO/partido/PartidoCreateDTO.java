@@ -15,5 +15,4 @@ public record PartidoCreateDTO(
         @NotNull(message = "La fecha es obligatoria")
         @FutureOrPresent(message = "La fecha del partido no puede ser en el pasado")
         LocalDate fecha
-) {
-}
+) {}

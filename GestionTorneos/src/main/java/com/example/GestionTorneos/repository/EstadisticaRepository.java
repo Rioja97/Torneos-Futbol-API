@@ -8,6 +8,7 @@ import java.util.List;
 public interface EstadisticaRepository extends JpaRepository<Estadistica, Long> {
 
     List<Estadistica> findByJugadorId(Long jugadorId);
-
     List<Estadistica> findByJugadorIdAndPartido_Torneo_Id(Long jugadorId, Long torneoId);
+    List<Estadistica> findByTorneoId(Long torneoId);
+
 }

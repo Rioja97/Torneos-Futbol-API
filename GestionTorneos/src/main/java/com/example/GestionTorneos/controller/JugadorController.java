@@ -4,7 +4,9 @@ import com.example.GestionTorneos.DTO.jugador.JugadorCreateDTO;
 import com.example.GestionTorneos.DTO.jugador.JugadorResponseDTO;
 import com.example.GestionTorneos.DTO.jugador.JugadorUpdateDTO;
 import com.example.GestionTorneos.model.Jugador;
+import com.example.GestionTorneos.repository.JugadorRepository;
 import com.example.GestionTorneos.service.JugadorService;
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -19,6 +21,8 @@ public class JugadorController {
 
     @Autowired
     private JugadorService jugadorService;
+    @Autowired
+    private JugadorRepository jugadorRepository;
 
     @GetMapping
     public ResponseEntity<List<JugadorResponseDTO>> listarTodos() {
@@ -45,5 +49,11 @@ public class JugadorController {
     public void eliminar(@PathVariable Long id) {
         JugadorResponseDTO jugador =  jugadorService.buscarPorId(id);
         jugadorService.eliminar(id);
+    }
+
+    @GetMapping("/equipo/{equipoId}")
+    @Transactional
+    public ResponseEntity<List<Jugador>> obtenerPorEquipo(@PathVariable Long equipoId) {
+        return ResponseEntity.ok(jugadorRepository.findByEquipoId(equipoId));
     }
 }

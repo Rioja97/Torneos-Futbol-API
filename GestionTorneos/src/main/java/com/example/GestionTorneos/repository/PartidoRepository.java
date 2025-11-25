@@ -11,12 +11,9 @@ import java.util.Optional;
 
 public interface PartidoRepository extends JpaRepository<Partido, Long> {
 
-    @Query("SELECT CASE WHEN COUNT(p) > 0 THEN true ELSE false END FROM Partido p " +
-            "WHERE p.fecha = :fecha " +
-            "AND (p.equipoLocal.id = :equipoLocalId OR p.equipoVisitante.id = :equipoVisitanteId)")
-    boolean existsByFechaAndEquipos(@Param("fecha") LocalDate fecha,
-                                    @Param("equipoLocalId") Long equipoLocalId,
-                                    @Param("equipoVisitanteId") Long equipoVisitanteId);
+    boolean existsByFechaAndEquipoLocalId(LocalDate fecha, Long equipoId);
+    boolean existsByFechaAndEquipoVisitanteId(LocalDate fecha, Long equipoId);
+
 
 
     @Query("SELECT CASE WHEN COUNT(p) > 0 THEN true ELSE false END FROM Partido p " +

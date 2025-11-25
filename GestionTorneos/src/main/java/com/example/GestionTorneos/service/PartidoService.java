@@ -146,6 +146,7 @@ public class PartidoService {
             Estadistica estadistica = new Estadistica();
             estadistica.setPartido(partido);
             estadistica.setJugador(jugador);
+            estadistica.setTorneo(partido.getTorneo());  // ← AGREGAR ESTA LÍNEA
             estadistica.setGoles(estDto.goles());
             estadistica.setAsistencias(estDto.asistencias());
             estadistica.setTarjetasAmarillas(estDto.tarjetasAmarillas());
@@ -162,21 +163,30 @@ public class PartidoService {
     }
 
     private void validarLogicaNegocioCreacion(Partido partido) {
+
         if (partido.getEquipoLocal().getId().equals(partido.getEquipoVisitante().getId())) {
             throw new IllegalArgumentException("El equipo local y visitante no pueden ser el mismo.");
         }
+
         if (partido.getFecha().isBefore(LocalDate.now())) {
             throw new IllegalArgumentException("No se puede programar un partido en una fecha pasada.");
         }
-        boolean yaJuegaEseDia = partidoRepository.existsByFechaAndEquipos(
-                partido.getFecha(),
-                partido.getEquipoLocal().getId(),
-                partido.getEquipoVisitante().getId()
-        );
-        if (yaJuegaEseDia) {
+
+        Long localId = partido.getEquipoLocal().getId();
+        Long visitanteId = partido.getEquipoVisitante().getId();
+        LocalDate fecha = partido.getFecha();
+
+        boolean localYaJuega = partidoRepository.existsByFechaAndEquipoLocalId(fecha, localId)
+                || partidoRepository.existsByFechaAndEquipoVisitanteId(fecha, localId);
+
+        boolean visitanteYaJuega = partidoRepository.existsByFechaAndEquipoLocalId(fecha, visitanteId)
+                || partidoRepository.existsByFechaAndEquipoVisitanteId(fecha, visitanteId);
+
+        if (localYaJuega || visitanteYaJuega) {
             throw new IllegalArgumentException("Uno de los equipos ya tiene un partido en esa fecha.");
         }
     }
+
 
     private void validarLogicaNegocioActualizacion(Partido partidoActualizado) {
         if (partidoActualizado.getEquipoLocal().getId().equals(partidoActualizado.getEquipoVisitante().getId())) {

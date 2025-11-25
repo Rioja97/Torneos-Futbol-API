@@ -36,6 +36,10 @@ public class Estadistica {
     @JsonIgnore
     private Partido partido;
 
+    @ManyToOne
+    @JoinColumn(name = "torneo_id")  // ← AGREGAR ESTA RELACIÓN
+    private Torneo torneo;
+
     public Estadistica() {
     }
 
@@ -80,5 +84,11 @@ public class Estadistica {
     }
     public void setPartido(Partido partido) {
         this.partido = partido;
+    }
+    public Torneo getTorneo() {
+        return torneo;
+    }
+    public void setTorneo(Torneo torneo) {
+        this.torneo = torneo;
     }
 }

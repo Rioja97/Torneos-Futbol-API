@@ -43,4 +43,11 @@ public class EstadisticaService {
                 .map(estadisticaMapper::estadisticaToEstadisticaDetailDTO)
                 .collect(Collectors.toList());
     }
+
+
+    public List<EstadisticaDetailDTO> obtenerPorTorneo(Long torneoId) {
+        return estadisticaRepository.findByTorneoId(torneoId).stream()
+                .map(estadisticaMapper::estadisticaToEstadisticaDetailDTO)
+                .collect(Collectors.toList());
+    }
 }
