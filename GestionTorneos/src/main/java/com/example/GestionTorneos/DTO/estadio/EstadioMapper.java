@@ -1,5 +1,6 @@
 package com.example.GestionTorneos.DTO.estadio;
 
+import com.example.GestionTorneos.dto.estadio.EstadioDTO;
 import com.example.GestionTorneos.model.Estadio;
 import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;

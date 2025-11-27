@@ -1,6 +1,6 @@
-package com.example.GestionTorneos.DTO.equipo;
+package com.example.GestionTorneos.dto.equipo;
 
-import com.example.GestionTorneos.DTO.estadio.EstadioDTO;
+import com.example.GestionTorneos.dto.estadio.EstadioDTO;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;

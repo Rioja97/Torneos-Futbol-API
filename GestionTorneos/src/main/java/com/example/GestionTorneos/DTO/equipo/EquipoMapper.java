@@ -1,5 +1,6 @@
 package com.example.GestionTorneos.DTO.equipo;
 
+import com.example.GestionTorneos.dto.equipo.EquipoCreateDTO;
 import com.example.GestionTorneos.model.Equipo;
 import org.mapstruct.*;
 
@@ -19,7 +20,7 @@ public interface EquipoMapper {
     //Mapeo para listado
     @Mapping(source = "estadio.nombre", target = "nombreEstadio")
     @Mapping(source = "estadio.capacidad", target = "capacidadEstadio")
-    EquipoResponseDTO responseDTOToEquipo(Equipo equipo);
+    com.example.GestionTorneos.DTO.equipo.EquipoResponseDTO responseDTOToEquipo(Equipo equipo);
 
     //Mapeo para actualización de equipo
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
@@ -27,5 +28,5 @@ public interface EquipoMapper {
     @Mapping(target = "jugadores", ignore = true)
     @Mapping(target = "entrenador", ignore = true)
     @Mapping(target = "estadio", ignore = true)
-    void updateDTOToEquipo(EquipoUpdateDTO dto, @MappingTarget Equipo equipo);
+    void updateDTOToEquipo(com.example.GestionTorneos.DTO.equipo.EquipoUpdateDTO dto, @MappingTarget Equipo equipo);
 }

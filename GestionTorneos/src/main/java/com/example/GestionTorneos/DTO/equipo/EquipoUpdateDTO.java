@@ -1,6 +1,6 @@
 package com.example.GestionTorneos.DTO.equipo;
 
-import com.example.GestionTorneos.DTO.estadio.EstadioDTO;
+import com.example.GestionTorneos.dto.estadio.EstadioDTO;
 import jakarta.validation.constraints.Size;
 
 public record EquipoUpdateDTO(

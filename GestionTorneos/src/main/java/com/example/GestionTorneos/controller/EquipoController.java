@@ -1,8 +1,8 @@
 package com.example.GestionTorneos.controller;
 
-import com.example.GestionTorneos.DTO.equipo.EquipoCreateDTO;
 import com.example.GestionTorneos.DTO.equipo.EquipoResponseDTO;
 import com.example.GestionTorneos.DTO.equipo.EquipoUpdateDTO;
+import com.example.GestionTorneos.dto.equipo.EquipoCreateDTO;
 import com.example.GestionTorneos.model.Equipo;
 import com.example.GestionTorneos.service.EquipoService;
 import jakarta.validation.Valid;

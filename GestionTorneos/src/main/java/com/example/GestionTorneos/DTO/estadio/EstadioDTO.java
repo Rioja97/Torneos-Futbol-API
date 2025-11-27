@@ -1,4 +1,4 @@
-package com.example.GestionTorneos.DTO.estadio;
+package com.example.GestionTorneos.dto.estadio;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
