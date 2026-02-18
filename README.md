@@ -10,7 +10,7 @@
 ## 🚀 Cómo ejecutar el proyecto localmente
 
 ### Requisitos previos
-* Java 17+ (o tu versión)
+* Java 21+ 
 * Maven
 * MySQL Server (puerto 3306)
 
